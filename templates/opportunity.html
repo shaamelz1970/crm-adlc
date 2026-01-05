@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - CRM-ADLC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .back-link {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .company-name {
+            color: #bdc3c7;
+            font-size: 18px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .field {
+            margin-bottom: 15px;
+        }
+        
+        .field-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .field-value {
+            font-size: 15px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
+        .badge.pre_qualify {
+            background-color: #ffeaa7;
+            color: #d63031;
+        }
+        
+        .badge.medpicc_qualification {
+            background-color: #74b9ff;
+            color: #0984e3;
+        }
+        
+        .badge.solutioning {
+            background-color: #a29bfe;
+            color: #6c5ce7;
+        }
+        
+        .medpicc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .medpicc-item {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .medpicc-item.filled {
+            border-left-color: #27ae60;
+        }
+        
+        .medpicc-item.empty {
+            border-left-color: #e74c3c;
+            opacity: 0.6;
+        }
+        
+        .medpicc-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .medpicc-value {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        
+        .score-display {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .score-display .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+        
+        .score-display .value {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .artifacts-list {
+            list-style: none;
+        }
+        
+        .artifact-item {
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .artifact-type {
+            font-weight: 600;
+            color: #2c3e50;
+            text-transform: capitalize;
+        }
+        
+        .artifact-status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .artifact-status.approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .artifact-status.submitted {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .artifact-status.draft {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .stage-change-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #cbd5e0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .info-box {
+            padding: 12px;
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1565c0;
+            margin-top: 10px;
+        }
+        
+        .warning-box {
+            padding: 12px;
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #e65100;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>{{ opportunity.name }}</h1>
+                    <div class="company-name">{{ opportunity.company }}</div>
+                </div>
+                <a href="/" class="back-link">← Back to Dashboard</a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="content-grid">
+            <!-- Main Content -->
+            <div>
+                <!-- Pre-Qualification Section -->
+                <div class="card">
+                    <h2>📋 Pre-Qualification Details</h2>
+                    <div class="field">
+                        <div class="field-label">Stage</div>
+                        <div class="field-value">
+                            <span class="badge {{ opportunity.stage }}">
+                                {{ opportunity.stage.replace('_', ' ') }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Description</div>
+                        <div class="field-value">{{ opportunity.description or 'No description provided' }}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Budget Range</div>
+                        <div class="field-value">{{ opportunity.budget_range or 'Not specified' }}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Timeline</div>
+                        <div class="field-value">{{ opportunity.timeline or 'Not specified' }}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Decision Maker</div>
+                        <div class="field-value">{{ opportunity.decision_maker or 'Not identified' }}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Pain Points</div>
+                        <div class="field-value">{{ opportunity.pain_points or 'Not documented' }}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Interest Level</div>
+                        <div class="field-value">{{ opportunity.initial_interest_level or 'Not assessed' }}</div>
+                    </div>
+                </div>
+                
+                <!-- MEDPICC Section -->
+                <div class="card" style="margin-top: 20px;">
+                    <h2>🎯 MEDPICC Qualification</h2>
+                    <div class="medpicc-grid">
+                        <div class="medpicc-item {{ 'filled' if opportunity.metrics else 'empty' }}">
+                            <div class="medpicc-label">Metrics</div>
+                            <div class="medpicc-value">{{ opportunity.metrics or 'Not defined' }}</div>
+                        </div>
+                        <div class="medpicc-item {{ 'filled' if opportunity.economic_buyer else 'empty' }}">
+                            <div class="medpicc-label">Economic Buyer</div>
+                            <div class="medpicc-value">{{ opportunity.economic_buyer or 'Not identified' }}</div>
+                        </div>
+                        <div class="medpicc-item {{ 'filled' if opportunity.decision_criteria else 'empty' }}">
+                            <div class="medpicc-label">Decision Criteria</div>
+                            <div class="medpicc-value">{{ opportunity.decision_criteria or 'Not defined' }}</div>
+                        </div>
+                        <div class="medpicc-item {{ 'filled' if opportunity.decision_process else 'empty' }}">
+                            <div class="medpicc-label">Decision Process</div>
+                            <div class="medpicc-value">{{ opportunity.decision_process or 'Not mapped' }}</div>
+                        </div>
+                        <div class="medpicc-item {{ 'filled' if opportunity.identify_pain else 'empty' }}">
+                            <div class="medpicc-label">Identify Pain</div>
+                            <div class="medpicc-value">{{ opportunity.identify_pain or 'Not identified' }}</div>
+                        </div>
+                        <div class="medpicc-item {{ 'filled' if opportunity.champion else 'empty' }}">
+                            <div class="medpicc-label">Champion</div>
+                            <div class="medpicc-value">{{ opportunity.champion or 'Not identified' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div>
+                <!-- MEDPICC Score -->
+                <div class="card">
+                    <div class="score-display">
+                        <div class="label">MEDPICC Score</div>
+                        <div class="value">{{ opportunity.medpicc_score }}</div>
+                        <div class="label">out of 100</div>
+                    </div>
+                    
+                    <div class="field">
+                        <div class="field-label">Value</div>
+                        <div class="field-value">
+                            {% if opportunity.value %}
+                                ${{ "{:,.2f}".format(opportunity.value) }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Probability</div>
+                        <div class="field-value">{{ opportunity.probability if opportunity.probability is not none else 'TBD' }}{% if opportunity.probability is not none %}%{% endif %}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Expected Close</div>
+                        <div class="field-value">
+                            {{ opportunity.expected_close_date.strftime('%B %d, %Y') if opportunity.expected_close_date else 'TBD' }}
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Owner</div>
+                        <div class="field-value">{{ opportunity.owner }}</div>
+                    </div>
+                </div>
+                
+                <!-- Artifacts -->
+                <div class="card" style="margin-top: 20px;">
+                    <h2>📁 ADLC Artifacts</h2>
+                    {% if opportunity.artifacts %}
+                    <ul class="artifacts-list">
+                        {% for artifact in opportunity.artifacts %}
+                        <li class="artifact-item">
+                            <span class="artifact-type">{{ artifact.type.replace('_', ' ') }}</span>
+                            <span class="artifact-status {{ artifact.status }}">{{ artifact.status }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p style="color: #7f8c8d; font-style: italic;">No artifacts yet</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Stage Change Form -->
+                {% if next_stage %}
+                <div class="card" style="margin-top: 20px;">
+                    <h2>⚡ Stage Advancement</h2>
+                    <div class="stage-change-form">
+                        <form id="stageChangeForm">
+                            <div class="form-group">
+                                <label>Advance to:</label>
+                                <select id="newStage" disabled>
+                                    <option value="{{ next_stage }}">{{ next_stage.replace('_', ' ').title() }}</option>
+                                </select>
+                            </div>
+                            <button type="button" onclick="requestStageChange()">Request Stage Change</button>
+                        </form>
+                        
+                        {% if required_artifacts %}
+                        <div class="warning-box">
+                            <strong>Required artifacts:</strong> {{ ', '.join(required_artifacts)|replace('_', ' ') }}
+                        </div>
+                        {% endif %}
+                        
+                        <div id="responseMessage" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function requestStageChange() {
+            const currentStage = "{{ opportunity.stage }}";
+            const newStage = document.getElementById('newStage').value;
+            const opportunityId = "{{ opportunity.id }}";
+            
+            // Get completed artifacts
+            const artifacts = {{ opportunity.artifacts|tojson }};
+            const completedArtifacts = artifacts
+                .filter(a => a.status === 'approved')
+                .map(a => a.type);
+            
+            const responseDiv = document.getElementById('responseMessage');
+            
+            try {
+                const response = await fetch('/api/stage-change', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        opportunity_id: opportunityId,
+                        current_stage: currentStage,
+                        new_stage: newStage,
+                        artifacts_completed: completedArtifacts
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    responseDiv.innerHTML = '<div class="info-box">' + data.message + '</div>';
+                } else {
+                    responseDiv.innerHTML = '<div class="warning-box">' + data.message + '</div>';
+                }
+            } catch (error) {
+                responseDiv.innerHTML = '<div class="warning-box">Error: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>
