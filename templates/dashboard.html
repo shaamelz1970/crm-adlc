@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - CRM-ADLC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 60px;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+        .medpicc-score {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stage-badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+        .opportunity-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #198754;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-graph-up-arrow"></i> CRM-ADLC
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#companies">
+                            <i class="bi bi-building"></i> Companies
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contacts">
+                            <i class="bi bi-people"></i> Contacts
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="bi bi-person-circle"></i> BDM User
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h2"><i class="bi bi-speedometer2"></i> Opportunities Dashboard</h1>
+                <p class="text-muted">Manage your sales opportunities with MEDPICC qualification</p>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Total Opportunities</h5>
+                        <p class="display-6">{{ opportunities|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">Total Value</h5>
+                        <p class="display-6">${{ "{:,.0f}".format(opportunities|sum(attribute='value')) }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">High Priority</h5>
+                        <p class="display-6">{{ opportunities|selectattr('priority', 'in', ['high', 'critical'])|list|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">Avg MEDPICC Score</h5>
+                        <p class="display-6">{{ "%.0f"|format((opportunities|sum(attribute='medpicc.overall_score') / opportunities|length)) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opportunities Table -->
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-list-ul"></i> All Opportunities</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Opportunity</th>
+                                        <th>Company</th>
+                                        <th>Stage</th>
+                                        <th>Value</th>
+                                        <th>Probability</th>
+                                        <th>MEDPICC Score</th>
+                                        <th>Priority</th>
+                                        <th>Expected Close</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for opp in opportunities %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ opp.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ opp.description[:60] }}...</small>
+                                        </td>
+                                        <td>{{ opp.company }}</td>
+                                        <td>
+                                            <span class="badge bg-info stage-badge">
+                                                {{ get_stage_display_name(opp.stage) }}
+                                            </span>
+                                        </td>
+                                        <td class="text-success">
+                                            <strong>${{ "{:,.0f}".format(opp.value) }}</strong>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: {{ opp.probability }}%;" 
+                                                     aria-valuenow="{{ opp.probability }}" 
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                    {{ opp.probability }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ get_medpicc_score_color(opp.medpicc.overall_score) }}" 
+                                                  style="font-size: 1.1rem; padding: 0.5rem;">
+                                                {{ opp.medpicc.overall_score }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ get_priority_badge(opp.priority) }}">
+                                                {{ opp.priority.upper() }}
+                                            </span>
+                                        </td>
+                                        <td>{{ opp.expected_close_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <a href="/opportunity/{{ opp.id }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

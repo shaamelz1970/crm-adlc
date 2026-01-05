@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - CRM-ADLC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 60px;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+        .medpicc-component {
+            padding: 1rem;
+            border-left: 4px solid #0d6efd;
+            background-color: #f8f9fa;
+            margin-bottom: 1rem;
+        }
+        .medpicc-score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 auto;
+        }
+        .artifact-item {
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            background-color: white;
+        }
+        .stage-progress {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-graph-up-arrow"></i> CRM-ADLC
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="bi bi-file-earmark-text"></i> Opportunity
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="bi bi-person-circle"></i> {{ opportunity.owner }}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item active">{{ opportunity.name }}</li>
+                    </ol>
+                </nav>
+                <h1 class="h2">{{ opportunity.name }}</h1>
+                <p class="text-muted">{{ opportunity.company }} • {{ get_stage_display_name(opportunity.stage) }}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Opportunity Details -->
+            <div class="col-lg-8">
+                <!-- Basic Information -->
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Opportunity Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Value:</strong> <span class="text-success fs-4">${{ "{:,.2f}".format(opportunity.value) }} {{ opportunity.currency }}</span></p>
+                                <p><strong>Probability:</strong> {{ opportunity.probability }}%</p>
+                                <p><strong>Expected Close:</strong> {{ opportunity.expected_close_date.strftime('%Y-%m-%d') }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Priority:</strong> 
+                                    <span class="badge bg-{{ get_priority_badge(opportunity.priority) }}">
+                                        {{ opportunity.priority.upper() }}
+                                    </span>
+                                </p>
+                                <p><strong>Owner:</strong> {{ opportunity.owner }}</p>
+                                <p><strong>Current Stage:</strong> 
+                                    <span class="badge bg-info">{{ get_stage_display_name(opportunity.stage) }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <hr>
+                        <p><strong>Description:</strong></p>
+                        <p>{{ opportunity.description }}</p>
+                    </div>
+                </div>
+
+                <!-- Pre-Qualification Section -->
+                {% if opportunity.stage == 'pre_qualify' %}
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Pre-Qualification Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>This opportunity is in the <strong>Pre-Qualification</strong> stage.</p>
+                        <p><strong>Required to advance:</strong></p>
+                        <ul>
+                            <li>Create and get approval for <strong>Intent Brief</strong> artifact</li>
+                        </ul>
+                        {% if gating_message %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> {{ gating_message }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- MEDPICC Details -->
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> MEDPICC Qualification Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="medpicc-component">
+                                    <h6 class="text-primary"><strong>M</strong>etrics</h6>
+                                    <p class="mb-0 small">{{ opportunity.metrics }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="medpicc-component">
+                                    <h6 class="text-primary"><strong>E</strong>conomic Buyer</h6>
+                                    <p class="mb-0 small">{{ opportunity.economic_buyer }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="medpicc-component">
+                                    <h6 class="text-primary"><strong>D</strong>ecision Criteria</h6>
+                                    <p class="mb-0 small">{{ opportunity.decision_criteria }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="medpicc-component">
+                                    <h6 class="text-primary"><strong>D</strong>ecision Process</h6>
+                                    <p class="mb-0 small">{{ opportunity.decision_process }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="medpicc-component">
+                                    <h6 class="text-primary"><strong>I</strong>dentify Pain</h6>
+                                    <p class="mb-0 small">{{ opportunity.identify_pain }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="medpicc-component">
+                                    <h6 class="text-primary"><strong>C</strong>hampion</h6>
+                                    <p class="mb-0 small">{{ opportunity.champion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="medpicc-component">
+                                    <h6 class="text-primary"><strong>C</strong>ompetition</h6>
+                                    <p class="mb-0 small">{{ opportunity.competition }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Artifacts Section -->
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> ADLC Artifacts</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if artifacts %}
+                            {% for artifact in artifacts %}
+                            <div class="artifact-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ artifact.title }}</strong>
+                                        <br>
+                                        <small class="text-muted">Type: {{ artifact.type }}</small>
+                                    </div>
+                                    <span class="badge bg-{{ 'success' if artifact.status == 'approved' else 'warning' if artifact.status == 'review' else 'secondary' }}">
+                                        {{ artifact.status.upper() }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No artifacts created yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Stage Change Form -->
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-arrow-right-circle"></i> Stage Advancement</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if can_advance %}
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle"></i> This opportunity meets the requirements to advance to <strong>{{ get_stage_display_name(next_stage) }}</strong>
+                        </div>
+                        <form action="/api/stage-change" method="POST" id="stageChangeForm">
+                            <input type="hidden" name="opportunity_id" value="{{ opportunity.id }}">
+                            <input type="hidden" name="new_stage" value="{{ next_stage }}">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-arrow-right"></i> Advance to {{ get_stage_display_name(next_stage) }}
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> Cannot advance to next stage yet.
+                            {% if gating_message %}
+                            <br><strong>Reason:</strong> {{ gating_message }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: MEDPICC Score Panel -->
+            <div class="col-lg-4">
+                <!-- Overall MEDPICC Score -->
+                <div class="card border-{{ get_medpicc_score_color(opportunity.medpicc.overall_score) }}">
+                    <div class="card-header bg-{{ get_medpicc_score_color(opportunity.medpicc.overall_score) }} text-white">
+                        <h5 class="mb-0 text-center">Overall MEDPICC Score</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="medpicc-score-circle bg-{{ get_medpicc_score_color(opportunity.medpicc.overall_score) }} text-white">
+                            {{ opportunity.medpicc.overall_score }}
+                        </div>
+                        <p class="mt-3 mb-0">
+                            {% if opportunity.medpicc.overall_score >= 80 %}
+                            <strong class="text-success">Excellent qualification!</strong>
+                            {% elif opportunity.medpicc.overall_score >= 60 %}
+                            <strong class="text-warning">Good qualification</strong>
+                            {% else %}
+                            <strong class="text-danger">Needs improvement</strong>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Component Scores -->
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Component Scores</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small><strong>Metrics</strong></small>
+                                <small>{{ opportunity.medpicc.metrics_score }}/100</small>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ get_medpicc_score_color(opportunity.medpicc.metrics_score) }}" 
+                                     style="width: {{ opportunity.medpicc.metrics_score }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small><strong>Economic Buyer</strong></small>
+                                <small>{{ opportunity.medpicc.economic_buyer_score }}/100</small>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ get_medpicc_score_color(opportunity.medpicc.economic_buyer_score) }}" 
+                                     style="width: {{ opportunity.medpicc.economic_buyer_score }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small><strong>Decision Criteria</strong></small>
+                                <small>{{ opportunity.medpicc.decision_criteria_score }}/100</small>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ get_medpicc_score_color(opportunity.medpicc.decision_criteria_score) }}" 
+                                     style="width: {{ opportunity.medpicc.decision_criteria_score }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small><strong>Decision Process</strong></small>
+                                <small>{{ opportunity.medpicc.decision_process_score }}/100</small>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ get_medpicc_score_color(opportunity.medpicc.decision_process_score) }}" 
+                                     style="width: {{ opportunity.medpicc.decision_process_score }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small><strong>Identify Pain</strong></small>
+                                <small>{{ opportunity.medpicc.identify_pain_score }}/100</small>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ get_medpicc_score_color(opportunity.medpicc.identify_pain_score) }}" 
+                                     style="width: {{ opportunity.medpicc.identify_pain_score }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small><strong>Champion</strong></small>
+                                <small>{{ opportunity.medpicc.champion_score }}/100</small>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ get_medpicc_score_color(opportunity.medpicc.champion_score) }}" 
+                                     style="width: {{ opportunity.medpicc.champion_score }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small><strong>Competition</strong></small>
+                                <small>{{ opportunity.medpicc.competition_score }}/100</small>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ get_medpicc_score_color(opportunity.medpicc.competition_score) }}" 
+                                     style="width: {{ opportunity.medpicc.competition_score }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle stage change form submission
+        document.getElementById('stageChangeForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to advance this opportunity to the next stage?')) {
+                this.submit();
+            }
+        });
+    </script>
+</body>
+</html>
