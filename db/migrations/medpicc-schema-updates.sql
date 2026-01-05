@@ -149,7 +149,7 @@ BEGIN
             NEW.identify_pain,
             NEW.champion,
             NOW(),
-            NEW.updated_at -- Using updated_at as proxy for who made the change
+            NULL -- created_by should be set by application context, not available in trigger
         );
     END IF;
     

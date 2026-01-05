@@ -387,11 +387,17 @@
                     
                     <div class="field">
                         <div class="field-label">Value</div>
-                        <div class="field-value">${{ "{:,.2f}".format(opportunity.value) }}</div>
+                        <div class="field-value">
+                            {% if opportunity.value %}
+                                ${{ "{:,.2f}".format(opportunity.value) }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="field">
                         <div class="field-label">Probability</div>
-                        <div class="field-value">{{ opportunity.probability }}%</div>
+                        <div class="field-value">{{ opportunity.probability if opportunity.probability is not none else 'TBD' }}{% if opportunity.probability is not none %}%{% endif %}</div>
                     </div>
                     <div class="field">
                         <div class="field-label">Expected Close</div>
